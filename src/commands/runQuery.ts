@@ -15,8 +15,18 @@ export class runQueryCommand extends BaseCommand {
 
     let connection = EditorState.connection;
     if (!connection) {
-      vscode.window.showWarningMessage('No PostgreSQL Server or Database selected');
-      return;
+      // If we don't have a connection, then we need to get one, execute the 'vscode-postgres.selectConnection' command
+      // to get the user to select a connection
+      await vscode.commands.executeCommand('vscode-postgres.selectConnection');
+
+      // Try to get the connection again
+      connection = EditorState.connection;
+
+      // If the result is false, then the user cancelled the selection
+      if (!connection) {
+        vscode.window.showWarningMessage('No PostgreSQL Server or Database selected');
+        return;
+      }
     }
 
     let editor = vscode.window.activeTextEditor;
